@@ -1,1 +1,240 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Habit Tracker</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, #1a1a1a, #000000);
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #ff2e2e;
+    }
+
+    .card {
+      background: rgba(255, 0, 0, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .day {
+      padding: 15px;
+      text-align: center;
+      border-radius: 10px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .day:hover {
+      background: rgba(255,0,0,0.4);
+    }
+
+    .selected {
+      background: red;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      width: 70%;
+    }
+
+    button {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: red;
+      color: white;
+    }
+
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .streak {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      color: #00ffcc;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="logo">🥊 ARYAN & SANSKAR 🥊</div>
+
+  <div class="card">
+    <div class="calendar" id="calendar"></div>
+  </div>
+
+  <div class="card">
+    <h3 id="selectedDay">Select a day</h3>
+
+    <input type="text" id="taskInput" placeholder="Add a task">
+    <button onclick="addTask()">Add</button>
+
+    <div id="taskList"></div>
+
+    <div class="message" id="message"></div>
+    <div class="streak" id="streak">Streak: 0 🔥</div>
+  </div>
+
+</div>
+
+<script>
+
+let selectedDay = null;
+
+const messages = [
+  "No excuses. Just results.",
+  "Train like a fighter.",
+  "Discipline wins.",
+  "Champions are built daily."
+];
+
+function showMessage() {
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+  document.getElementById("message").innerText = msg;
+}
+
+function getTasks(day) {
+  return JSON.parse(localStorage.getItem("tasks-" + day)) || [];
+}
+
+function saveTasks(day, tasks) {
+  localStorage.setItem("tasks-" + day, JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const taskList = document.getElementById("taskList");
+  taskList.innerHTML = "";
+
+  const tasks = getTasks(selectedDay);
+
+  tasks.forEach((task, index) => {
+    const div = document.createElement("div");
+    div.className = "task";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.done;
+
+    checkbox.onchange = () => {
+      task.done = checkbox.checked;
+      saveTasks(selectedDay, tasks);
+
+      if (tasks.every(t => t.done)) showMessage();
+      updateStreak();
+    };
+
+    const span = document.createElement("span");
+    span.innerText = task.text;
+
+    const delBtn = document.createElement("button");
+    delBtn.innerText = "🗑️";
+    delBtn.onclick = () => {
+      tasks.splice(index, 1);
+      saveTasks(selectedDay, tasks);
+      loadTasks();
+    };
+
+    div.appendChild(checkbox);
+    div.appendChild(span);
+    div.appendChild(delBtn);
+
+    taskList.appendChild(div);
+  });
+}
+
+function addTask() {
+  if (!selectedDay) return alert("Select a day first");
+
+  const input = document.getElementById("taskInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const tasks = getTasks(selectedDay);
+  tasks.push({ text, done: false });
+
+  saveTasks(selectedDay, tasks);
+  input.value = "";
+  loadTasks();
+}
+
+function updateStreak() {
+  let streak = 0;
+
+  for (let i = 30; i >= 1; i--) {
+    const tasks = getTasks(i);
+    if (tasks.length && tasks.every(t => t.done)) {
+      streak++;
+    } else break;
+  }
+
+  document.getElementById("streak").innerText = "Streak: " + streak + " 🔥";
+}
+
+const calendar = document.getElementById("calendar");
+
+for (let i = 1; i <= 30; i++) {
+  const day = document.createElement("div");
+  day.className = "day";
+  day.innerText = i;
+
+  day.onclick = () => {
+    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
+    day.classList.add("selected");
+
+    selectedDay = i;
+    document.getElementById("selectedDay").innerText = "Day " + i;
+
+    loadTasks();
+  };
+
+  calendar.appendChild(day);
+}
+
+updateStreak();
+
+</script>
+
+</body>
+</html>
