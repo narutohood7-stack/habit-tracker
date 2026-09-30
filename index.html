@@ -1,238 +1,298 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Habit Tracker</title>
+<title>Aryan & Sanskar Tracker</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top, #1a1a1a, #000000);
-      color: white;
-    }
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI';
+  background: black;
+  color:white;
+  overflow-x:hidden;
+}
 
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
-    }
+/* BACKGROUND IMAGE */
+body::before{
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:url('https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1600&q=80') center/cover;
+  opacity:0.2;
+  z-index:-1;
+}
 
-    .logo {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: #ff2e2e;
-    }
+/* LOGO */
+.logo{
+  text-align:center;
+  font-size:32px;
+  color:#ff2e2e;
+  font-weight:bold;
+  padding:20px;
+  text-shadow:0 0 15px red;
+}
 
-    .card {
-      background: rgba(255, 0, 0, 0.05);
-      padding: 20px;
-      border-radius: 15px;
-      margin-top: 20px;
-    }
+/* CARD */
+.card{
+  background:rgba(20,0,0,0.7);
+  border-radius:15px;
+  padding:20px;
+  margin:20px auto;
+  width:90%;
+  max-width:900px;
+  box-shadow:0 0 20px red;
+}
 
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-    }
+/* CALENDAR */
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
 
-    .day {
-      padding: 15px;
-      text-align: center;
-      border-radius: 10px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.05);
-    }
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+}
 
-    .day:hover {
-      background: rgba(255,0,0,0.4);
-    }
+.day{
+  padding:15px;
+  background:#1a1a1a;
+  text-align:center;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
 
-    .selected {
-      background: red;
-    }
+.day:hover{
+  background:red;
+  transform:scale(1.1);
+}
 
-    input {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      width: 70%;
-    }
+.active{
+  background:red;
+}
 
-    button {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      background: red;
-      color: white;
-    }
+/* TASK INPUT */
+input{
+  padding:10px;
+  width:70%;
+  border-radius:8px;
+  border:none;
+}
 
-    .task {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      background: rgba(255,255,255,0.05);
-      padding: 10px;
-      border-radius: 8px;
-    }
+button{
+  padding:10px;
+  background:red;
+  border:none;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+}
 
-    .streak {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 18px;
-    }
+button:hover{
+  background:#ff4444;
+}
 
-    .message {
-      text-align: center;
-      margin-top: 10px;
-      color: #00ffcc;
-      font-weight: bold;
-    }
-  </style>
+/* TASK LIST */
+.task{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  background:#111;
+  padding:10px;
+  border-radius:8px;
+}
+
+.completed{
+  text-decoration:line-through;
+  color:gray;
+}
+
+/* MOTIVATION */
+.motivation{
+  text-align:center;
+  margin-top:15px;
+  color:#ff5555;
+  font-style:italic;
+}
+
+/* STREAK */
+.streak{
+  text-align:center;
+  margin-top:10px;
+  font-size:18px;
+}
+
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="logo">🔥 ARYAN & SANSKAR 🔥</div>
 
-  <div class="logo">🥊 ARYAN & SANSKAR 🥊</div>
-
-  <div class="card">
-    <div class="calendar" id="calendar"></div>
+<div class="card">
+  <div class="calendar-header">
+    <button onclick="prevMonth()">⬅</button>
+    <h2 id="month"></h2>
+    <button onclick="nextMonth()">➡</button>
   </div>
 
-  <div class="card">
-    <h3 id="selectedDay">Select a day</h3>
+  <div class="calendar-grid" id="calendar"></div>
+</div>
 
-    <input type="text" id="taskInput" placeholder="Add a task">
-    <button onclick="addTask()">Add</button>
+<div class="card">
+  <h3 id="selectedDay">Select a Day</h3>
 
-    <div id="taskList"></div>
+  <input id="taskInput" placeholder="Add task">
+  <button onclick="addTask()">Add</button>
 
-    <div class="message" id="message"></div>
-    <div class="streak" id="streak">Streak: 0 🔥</div>
-  </div>
+  <div id="tasks"></div>
 
+  <div class="streak">🔥 Streak: <span id="streak">0</span></div>
+
+  <div class="motivation" id="motivation"></div>
 </div>
 
 <script>
 
-let selectedDay = null;
+let date = new Date();
+let selectedDate = null;
 
-const messages = [
-  "No excuses. Just results.",
-  "Train like a fighter.",
-  "Discipline wins.",
-  "Champions are built daily."
-];
+function renderCalendar(){
+  const calendar = document.getElementById("calendar");
+  calendar.innerHTML = "";
 
-function showMessage() {
-  const msg = messages[Math.floor(Math.random() * messages.length)];
-  document.getElementById("message").innerText = msg;
-}
+  const year = date.getFullYear();
+  const month = date.getMonth();
 
-function getTasks(day) {
-  return JSON.parse(localStorage.getItem("tasks-" + day)) || [];
-}
+  document.getElementById("month").innerText =
+    date.toLocaleString('default',{month:'long'}) + " " + year;
 
-function saveTasks(day, tasks) {
-  localStorage.setItem("tasks-" + day, JSON.stringify(tasks));
-}
+  const firstDay = new Date(year,month,1).getDay();
+  const days = new Date(year,month+1,0).getDate();
 
-function loadTasks() {
-  const taskList = document.getElementById("taskList");
-  taskList.innerHTML = "";
+  for(let i=0;i<firstDay;i++){
+    calendar.innerHTML += "<div></div>";
+  }
 
-  const tasks = getTasks(selectedDay);
-
-  tasks.forEach((task, index) => {
+  for(let d=1; d<=days; d++){
     const div = document.createElement("div");
-    div.className = "task";
+    div.className="day";
+    div.innerText=d;
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = task.done;
-
-    checkbox.onchange = () => {
-      task.done = checkbox.checked;
-      saveTasks(selectedDay, tasks);
-
-      if (tasks.every(t => t.done)) showMessage();
-      updateStreak();
-    };
-
-    const span = document.createElement("span");
-    span.innerText = task.text;
-
-    const delBtn = document.createElement("button");
-    delBtn.innerText = "🗑️";
-    delBtn.onclick = () => {
-      tasks.splice(index, 1);
-      saveTasks(selectedDay, tasks);
+    div.onclick=()=>{
+      selectedDate = year+"-"+month+"-"+d;
+      document.getElementById("selectedDay").innerText =
+        "Tasks for "+d+" "+date.toLocaleString('default',{month:'long'});
       loadTasks();
-    };
+    }
 
-    div.appendChild(checkbox);
-    div.appendChild(span);
-    div.appendChild(delBtn);
-
-    taskList.appendChild(div);
-  });
+    calendar.appendChild(div);
+  }
 }
 
-function addTask() {
-  if (!selectedDay) return alert("Select a day first");
+function prevMonth(){
+  date.setMonth(date.getMonth()-1);
+  renderCalendar();
+}
 
+function nextMonth(){
+  date.setMonth(date.getMonth()+1);
+  renderCalendar();
+}
+
+/* TASK SYSTEM */
+function getTasks(){
+  return JSON.parse(localStorage.getItem(selectedDate)) || [];
+}
+
+function saveTasks(tasks){
+  localStorage.setItem(selectedDate, JSON.stringify(tasks));
+}
+
+function addTask(){
   const input = document.getElementById("taskInput");
-  const text = input.value.trim();
-  if (!text) return;
+  if(!input.value) return;
 
-  const tasks = getTasks(selectedDay);
-  tasks.push({ text, done: false });
-
-  saveTasks(selectedDay, tasks);
-  input.value = "";
+  let tasks = getTasks();
+  tasks.push({text:input.value,done:false});
+  saveTasks(tasks);
+  input.value="";
   loadTasks();
 }
 
-function updateStreak() {
-  let streak = 0;
+function loadTasks(){
+  const container = document.getElementById("tasks");
+  container.innerHTML="";
 
-  for (let i = 30; i >= 1; i--) {
-    const tasks = getTasks(i);
-    if (tasks.length && tasks.every(t => t.done)) {
+  let tasks = getTasks();
+
+  tasks.forEach((t,i)=>{
+    const div=document.createElement("div");
+    div.className="task";
+
+    const span=document.createElement("span");
+    span.innerText=t.text;
+    if(t.done) span.classList.add("completed");
+
+    span.onclick=()=>{
+      t.done=!t.done;
+      saveTasks(tasks);
+      loadTasks();
+      updateStreak();
+      showMotivation();
+    }
+
+    const del=document.createElement("button");
+    del.innerText="❌";
+    del.onclick=()=>{
+      tasks.splice(i,1);
+      saveTasks(tasks);
+      loadTasks();
+    }
+
+    div.appendChild(span);
+    div.appendChild(del);
+    container.appendChild(div);
+  });
+
+  updateStreak();
+}
+
+/* STREAK */
+function updateStreak(){
+  let streak=0;
+
+  for(let i=0;i<localStorage.length;i++){
+    let key=localStorage.key(i);
+    let tasks=JSON.parse(localStorage.getItem(key));
+
+    if(tasks && tasks.every(t=>t.done)){
       streak++;
-    } else break;
+    }
   }
 
-  document.getElementById("streak").innerText = "Streak: " + streak + " 🔥";
+  document.getElementById("streak").innerText=streak;
 }
 
-const calendar = document.getElementById("calendar");
+/* MOTIVATION */
+const quotes=[
+"Pain is temporary. Glory is forever.",
+"Discipline beats motivation.",
+"No excuses.",
+"Train like a fighter.",
+"Be stronger than yesterday."
+];
 
-for (let i = 1; i <= 30; i++) {
-  const day = document.createElement("div");
-  day.className = "day";
-  day.innerText = i;
-
-  day.onclick = () => {
-    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
-    day.classList.add("selected");
-
-    selectedDay = i;
-    document.getElementById("selectedDay").innerText = "Day " + i;
-
-    loadTasks();
-  };
-
-  calendar.appendChild(day);
+function showMotivation(){
+  const q=quotes[Math.floor(Math.random()*quotes.length)];
+  document.getElementById("motivation").innerText=q;
 }
 
-updateStreak();
+renderCalendar();
 
 </script>
 
