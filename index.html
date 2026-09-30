@@ -2,145 +2,267 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>IRON DISCIPLINE</title>
+<title>ARYAN & SANSKAR DISCIPLINE</title>
 
 <style>
 body {
-    margin:0;
-    font-family: Arial;
-    color:white;
-    text-align:center;
-    background: black;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+  text-align: center;
+  background: radial-gradient(circle at top, #1a0000, #000);
 }
 
-/* 🔥 BACKGROUND */
+/* 🔥 BACKGROUND OVERLAY */
 body::before {
-    content:"";
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:
-    linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.95)),
-    url("https://images.unsplash.com/photo-1549719386-74dfcbf7dbed");
-    background-size:cover;
-    background-position:center;
-    z-index:-1;
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255,0,0,0.2), transparent);
+  z-index: -1;
 }
 
 /* TITLE */
-h1 {
-    color:red;
-    margin-top:20px;
+.title {
+  font-size: 42px;
+  font-weight: bold;
+  margin-top: 20px;
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 10px red; }
+  to { text-shadow: 0 0 30px red; }
+}
+
+/* MONTH */
+.month {
+  font-size: 26px;
+  margin: 10px;
 }
 
 /* CALENDAR */
 .calendar {
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:10px;
-    width:90%;
-    margin:auto;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  max-width: 600px;
+  margin: auto;
 }
 
 .day {
-    padding:20px;
-    border:1px solid red;
-    border-radius:10px;
-    cursor:pointer;
+  padding: 15px;
+  border-radius: 10px;
+  background: #200;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.day:hover {
+  background: red;
+}
+
+.selected {
+  background: red !important;
 }
 
 .completed {
-    background:green;
+  background: green !important;
 }
 
 /* TASK BOX */
-.box {
-    margin-top:20px;
-    padding:20px;
-    background:rgba(0,0,0,0.8);
-    border-radius:15px;
+.tasks {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(0,0,0,0.7);
+  border-radius: 15px;
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* BUTTON */
-button {
-    background:red;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    cursor:pointer;
+.task {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
 }
+
+/* PROGRESS */
+.progress {
+  width: 100%;
+  height: 10px;
+  background: #333;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 10px;
+  width: 0%;
+  background: red;
+  border-radius: 10px;
+}
+
+/* STREAK */
+.streak {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🔥 IRON DISCIPLINE 🔥</h1>
-<h2 id="month"></h2>
+<h1 class="title">🔥 ARYAN & SANSKAR DISCIPLINE 🔥</h1>
+<div class="month" id="month"></div>
 
 <div class="calendar" id="calendar"></div>
 
-<div class="box">
-    <h2 id="dayTitle">Select a Day</h2>
+<div class="tasks">
+  <h3 id="dayTitle">Select a Day</h3>
 
-    <div>
-        <label><input type="checkbox" class="task"> NO JUNK FOOD</label><br>
-        <label><input type="checkbox" class="task"> NO MASTURBATION</label><br>
-        <label><input type="checkbox" class="task"> DO EXERCISE</label><br>
-        <label><input type="checkbox" class="task"> AVOID ALCOHOL</label>
-    </div>
+  <div id="taskList"></div>
 
-    <br>
-    <button onclick="completeDay()">COMPLETE DAY</button>
+  <div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
 
-    <h3 id="streak">🔥 Streak: 0</h3>
+  <div class="streak">🔥 Streak: <span id="streak">0</span></div>
 </div>
 
-<audio id="sound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+<!-- SOUND -->
+<audio id="clickSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+<audio id="successSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"></audio>
 
 <script>
+const calendar = document.getElementById("calendar");
+const monthText = document.getElementById("month");
+const taskList = document.getElementById("taskList");
+const dayTitle = document.getElementById("dayTitle");
+const progressBar = document.getElementById("progressBar");
+const streakEl = document.getElementById("streak");
+
 let selectedDay = null;
-let data = JSON.parse(localStorage.getItem("habitData")) || {};
 let streak = localStorage.getItem("streak") || 0;
+streakEl.innerText = streak;
 
-document.getElementById("streak").innerText = "🔥 Streak: " + streak;
+/* DEFAULT TASKS */
+const defaultTasks = [
+  "NO JUNK FOOD",
+  "NO MASTURBATION",
+  "DO EXERCISE",
+  "AVOID ALCOHOL"
+];
 
-/* REAL DATE */
+let data = JSON.parse(localStorage.getItem("data")) || {};
+
+/* DATE */
 const today = new Date();
-const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-document.getElementById("month").innerText =
-monthNames[today.getMonth()] + " " + today.getFullYear();
+const year = today.getFullYear();
+const month = today.getMonth();
+
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+monthText.innerText = today.toLocaleString('default', { month: 'long' }) + " " + year;
 
 /* CREATE CALENDAR */
-for(let i=1;i<=30;i++){
-    let div = document.createElement("div");
-    div.className="day";
-    div.innerText=i;
+for (let i = 1; i <= daysInMonth; i++) {
+  const div = document.createElement("div");
+  div.classList.add("day");
+  div.innerText = i;
 
-    if(data[i]?.done) div.classList.add("completed");
+  if (data[i]?.completed) div.classList.add("completed");
 
-    div.onclick=()=>{
-        selectedDay=i;
-        document.getElementById("dayTitle").innerText="Day "+i;
-    };
+  div.onclick = () => selectDay(i, div);
 
-    document.getElementById("calendar").appendChild(div);
+  calendar.appendChild(div);
+}
+
+/* SELECT DAY */
+function selectDay(day, element) {
+  document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
+  element.classList.add("selected");
+
+  selectedDay = day;
+  dayTitle.innerText = "Day " + day;
+
+  if (!data[day]) {
+    data[day] = { tasks: defaultTasks.map(t => ({ name: t, done: false })) };
+  }
+
+  renderTasks();
+  playClick();
+}
+
+/* RENDER TASKS */
+function renderTasks() {
+  taskList.innerHTML = "";
+
+  let tasks = data[selectedDay].tasks;
+
+  tasks.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.classList.add("task");
+
+    div.innerHTML = `
+      <span>${t.name}</span>
+      <input type="checkbox" ${t.done ? "checked" : ""} onchange="toggleTask(${i})">
+    `;
+
+    taskList.appendChild(div);
+  });
+
+  updateProgress();
+}
+
+/* TOGGLE TASK */
+function toggleTask(i) {
+  let tasks = data[selectedDay].tasks;
+  tasks[i].done = !tasks[i].done;
+
+  localStorage.setItem("data", JSON.stringify(data));
+  updateProgress();
+}
+
+/* PROGRESS */
+function updateProgress() {
+  let tasks = data[selectedDay].tasks;
+  let done = tasks.filter(t => t.done).length;
+
+  let percent = (done / tasks.length) * 100;
+  progressBar.style.width = percent + "%";
+
+  if (percent === 100) {
+    completeDay();
+  }
 }
 
 /* COMPLETE DAY */
-function completeDay(){
-    if(!selectedDay) return;
-
-    data[selectedDay] = {done:true};
-    localStorage.setItem("habitData", JSON.stringify(data));
-
+function completeDay() {
+  if (!data[selectedDay].completed) {
+    data[selectedDay].completed = true;
     streak++;
     localStorage.setItem("streak", streak);
+    streakEl.innerText = streak;
 
-    document.getElementById("sound").play();
+    localStorage.setItem("data", JSON.stringify(data));
 
-    alert("🔥 WOW CHAMP! DAY COMPLETED 🔥");
+    document.querySelectorAll(".day")[selectedDay - 1].classList.add("completed");
 
-    location.reload();
+    alert("🔥 WOW BABE! DAY COMPLETED 🔥");
+    playSuccess();
+  }
+}
+
+/* SOUND */
+function playClick() {
+  document.getElementById("clickSound").play();
+}
+
+function playSuccess() {
+  document.getElementById("successSound").play();
 }
 </script>
 
