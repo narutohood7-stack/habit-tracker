@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,109 +6,68 @@
 
 <style>
 body {
-  margin:0;
-  font-family: 'Segoe UI', sans-serif;
-  color:white;
-  text-align:center;
-  background:black;
+    margin:0;
+    font-family: Arial;
+    color:white;
+    text-align:center;
+    background: black;
 }
 
 /* 🔥 BACKGROUND */
-body::before{
-  content:"";
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:
-    linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
-    url("https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1400&q=80");
-  background-size:cover;
-  background-position:center;
-  z-index:-1;
+body::before {
+    content:"";
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:
+    linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.95)),
+    url("https://images.unsplash.com/photo-1549719386-74dfcbf7dbed");
+    background-size:cover;
+    background-position:center;
+    z-index:-1;
 }
 
 /* TITLE */
-h1{
-  color:#ff2e2e;
-  font-size:40px;
-  margin-top:20px;
-  text-shadow:0 0 20px red;
-}
-
-/* MONTH */
-#month{
-  font-size:24px;
-  margin:10px;
+h1 {
+    color:red;
+    margin-top:20px;
 }
 
 /* CALENDAR */
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:10px;
-  max-width:500px;
-  margin:auto;
+.calendar {
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+    width:90%;
+    margin:auto;
 }
 
-.day{
-  padding:15px;
-  background:#1a1a1a;
-  border-radius:10px;
-  cursor:pointer;
-  transition:0.3s;
-  border:1px solid #333;
+.day {
+    padding:20px;
+    border:1px solid red;
+    border-radius:10px;
+    cursor:pointer;
 }
 
-.day:hover{
-  background:#ff2e2e;
+.completed {
+    background:green;
 }
 
-.completed{
-  background:green !important;
+/* TASK BOX */
+.box {
+    margin-top:20px;
+    padding:20px;
+    background:rgba(0,0,0,0.8);
+    border-radius:15px;
 }
 
-/* CARD */
-.card{
-  background:rgba(0,0,0,0.7);
-  margin:20px auto;
-  padding:20px;
-  border-radius:15px;
-  max-width:500px;
-  border:1px solid red;
-}
-
-/* TASK */
-.task{
-  display:flex;
-  justify-content:space-between;
-  background:#111;
-  padding:12px;
-  margin:10px 0;
-  border-radius:10px;
-}
-
-button{
-  background:red;
-  border:none;
-  color:white;
-  padding:10px;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-/* PROGRESS */
-.progress{
-  height:10px;
-  background:#333;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-.progress-bar{
-  height:100%;
-  width:0%;
-  background:red;
-  transition:0.5s;
+/* BUTTON */
+button {
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    cursor:pointer;
 }
 </style>
 </head>
@@ -117,109 +75,73 @@ button{
 <body>
 
 <h1>🔥 IRON DISCIPLINE 🔥</h1>
-<div id="month"></div>
+<h2 id="month"></h2>
 
 <div class="calendar" id="calendar"></div>
 
-<div class="card">
-  <h3>Today's Tasks</h3>
+<div class="box">
+    <h2 id="dayTitle">Select a Day</h2>
 
-  <div class="task">
-    <span>🍔 NO JUNK FOOD</span>
-    <input type="checkbox" onclick="checkTask(this)">
-  </div>
+    <div>
+        <label><input type="checkbox" class="task"> NO JUNK FOOD</label><br>
+        <label><input type="checkbox" class="task"> NO MASTURBATION</label><br>
+        <label><input type="checkbox" class="task"> DO EXERCISE</label><br>
+        <label><input type="checkbox" class="task"> AVOID ALCOHOL</label>
+    </div>
 
-  <div class="task">
-    <span>🚫 NO MASTURBATION</span>
-    <input type="checkbox" onclick="checkTask(this)">
-  </div>
+    <br>
+    <button onclick="completeDay()">COMPLETE DAY</button>
 
-  <div class="task">
-    <span>🏋️ DO EXERCISE</span>
-    <input type="checkbox" onclick="checkTask(this)">
-  </div>
-
-  <div class="task">
-    <span>🚫 AVOID ALCOHOL</span>
-    <input type="checkbox" onclick="checkTask(this)">
-  </div>
-
-  <br>
-  <button onclick="completeDay()">COMPLETE DAY</button>
-
-  <p>🔥 Streak: <span id="streak">0</span></p>
-
-  <div class="progress">
-    <div class="progress-bar" id="bar"></div>
-  </div>
-
+    <h3 id="streak">🔥 Streak: 0</h3>
 </div>
 
-<audio id="sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+<audio id="sound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
 
 <script>
-let date = new Date();
-let year = date.getFullYear();
-let month = date.getMonth();
-
+let selectedDay = null;
 let data = JSON.parse(localStorage.getItem("habitData")) || {};
 let streak = localStorage.getItem("streak") || 0;
 
-document.getElementById("streak").innerText = streak;
+document.getElementById("streak").innerText = "🔥 Streak: " + streak;
 
-function loadCalendar(){
-  const cal = document.getElementById("calendar");
-  cal.innerHTML = "";
+/* REAL DATE */
+const today = new Date();
+const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+document.getElementById("month").innerText =
+monthNames[today.getMonth()] + " " + today.getFullYear();
 
-  const days = new Date(year, month+1, 0).getDate();
+/* CREATE CALENDAR */
+for(let i=1;i<=30;i++){
+    let div = document.createElement("div");
+    div.className="day";
+    div.innerText=i;
 
-  document.getElementById("month").innerText =
-    date.toLocaleString('default', { month: 'long' }) + " " + year;
+    if(data[i]?.done) div.classList.add("completed");
 
-  for(let i=1;i<=days;i++){
-    let d = document.createElement("div");
-    d.className="day";
-    d.innerText=i;
+    div.onclick=()=>{
+        selectedDay=i;
+        document.getElementById("dayTitle").innerText="Day "+i;
+    };
 
-    let key = year+"-"+month+"-"+i;
-
-    if(data[key]) d.classList.add("completed");
-
-    cal.appendChild(d);
-  }
+    document.getElementById("calendar").appendChild(div);
 }
 
-function checkTask(el){
-  let checked = document.querySelectorAll("input:checked").length;
-  let percent = (checked/4)*100;
-  document.getElementById("bar").style.width = percent+"%";
-}
-
+/* COMPLETE DAY */
 function completeDay(){
-  let checked = document.querySelectorAll("input:checked").length;
+    if(!selectedDay) return;
 
-  if(checked < 4){
-    alert("Complete all tasks!");
-    return;
-  }
+    data[selectedDay] = {done:true};
+    localStorage.setItem("habitData", JSON.stringify(data));
 
-  let today = new Date().getDate();
-  let key = year+"-"+month+"-"+today;
+    streak++;
+    localStorage.setItem("streak", streak);
 
-  data[key]=true;
-  localStorage.setItem("habitData", JSON.stringify(data));
+    document.getElementById("sound").play();
 
-  streak++;
-  localStorage.setItem("streak", streak);
+    alert("🔥 WOW CHAMP! DAY COMPLETED 🔥");
 
-  document.getElementById("sound").play();
-
-  alert("🔥 WOW! DISCIPLINE LEVEL UP!");
-
-  location.reload();
+    location.reload();
 }
-
-loadCalendar();
 </script>
 
 </body>
