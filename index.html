@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Iron Discipline Tracker</title>
+<title>IRON DISCIPLINE</title>
 
 <style>
 body {
@@ -10,25 +10,24 @@ body {
     font-family: 'Segoe UI', sans-serif;
     color: white;
     text-align: center;
-    background: black;
     overflow-x: hidden;
 }
 
-/* 🔥 BACKGROUND IMAGE */
+/* 🔥 PRO BACKGROUND */
 body::before {
     content: "";
     position: fixed;
     width: 100%;
     height: 100%;
-    background: url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=2070') center/cover;
-    filter: brightness(0.25);
+    background: 
+    linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)),
+    url('https://images.unsplash.com/photo-1546484959-f0c44c6b5d3b?q=80&w=2070') center/cover no-repeat;
     z-index: -1;
 }
 
 /* TITLE */
 .logo {
-    font-size: 36px;
-    font-weight: bold;
+    font-size: 38px;
     color: red;
     margin-top: 20px;
     animation: glow 2s infinite alternate;
@@ -36,7 +35,7 @@ body::before {
 
 @keyframes glow {
     from { text-shadow: 0 0 10px red; }
-    to { text-shadow: 0 0 25px red; }
+    to { text-shadow: 0 0 30px red; }
 }
 
 /* CALENDAR */
@@ -50,23 +49,30 @@ body::before {
 
 .day {
     padding: 15px;
-    background: rgba(255,0,0,0.1);
-    border-radius: 10px;
+    background: rgba(255,0,0,0.15);
+    border-radius: 12px;
     cursor: pointer;
     transition: 0.3s;
 }
 
 .day:hover {
+    transform: scale(1.1);
     background: red;
 }
 
 .completed {
     background: green !important;
+    animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+    0% { transform: scale(0.6); }
+    100% { transform: scale(1); }
 }
 
 /* TASK BOX */
 .task-box {
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.85);
     padding: 20px;
     margin: 20px auto;
     max-width: 600px;
@@ -91,7 +97,6 @@ button {
 /* STREAK */
 .streak {
     font-size: 22px;
-    margin-top: 10px;
     color: orange;
 }
 </style>
@@ -100,21 +105,21 @@ button {
 <body>
 
 <div class="logo">🔥 IRON DISCIPLINE 🔥</div>
+<h3>NO EXCUSES. JUST RESULTS.</h3>
 
 <h2 id="monthYear"></h2>
 
 <div class="calendar" id="calendar"></div>
 
 <div class="task-box">
-    <h3 id="dayTitle">Select a Day</h3>
-
+    <h3 id="dayTitle"></h3>
     <div id="tasks"></div>
-
     <div class="streak">🔥 Streak: <span id="streak">0</span></div>
 </div>
 
-<!-- 🔊 SOUND -->
-<audio id="sound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+<!-- 🔊 SOUND EFFECTS -->
+<audio id="winSound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+<audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
 
 <script>
 const tasksList = [
@@ -131,15 +136,14 @@ let streak = localStorage.getItem("streak") || 0;
 document.getElementById("streak").innerText = streak;
 
 const calendar = document.getElementById("calendar");
-const monthYear = document.getElementById("monthYear");
-
 const now = new Date();
 const year = now.getFullYear();
 const month = now.getMonth();
 
 const daysInMonth = new Date(year, month+1, 0).getDate();
 
-monthYear.innerText = now.toLocaleString('default', { month: 'long' }) + " " + year;
+document.getElementById("monthYear").innerText =
+now.toLocaleString('default',{month:'long'}) + " " + year;
 
 /* CREATE CALENDAR */
 for(let i=1;i<=daysInMonth;i++){
@@ -154,6 +158,7 @@ for(let i=1;i<=daysInMonth;i++){
     }
 
     div.onclick = ()=>{
+        document.getElementById("clickSound").play();
         selectedDate = key;
         showTasks(i);
     }
@@ -161,13 +166,19 @@ for(let i=1;i<=daysInMonth;i++){
     calendar.appendChild(div);
 }
 
+/* AUTO SELECT TODAY */
+let today = now.getDate();
+selectedDate = year+"-"+month+"-"+today;
+showTasks(today);
+
 /* SHOW TASKS */
 function showTasks(day){
     document.getElementById("dayTitle").innerText = "Day " + day;
+
     let container = document.getElementById("tasks");
     container.innerHTML = "";
 
-    tasksList.forEach((task,index)=>{
+    tasksList.forEach(task=>{
         let div = document.createElement("div");
         div.classList.add("task");
 
@@ -175,18 +186,17 @@ function showTasks(day){
         btn.innerText = "Complete";
 
         btn.onclick = ()=>{
-            completeTask();
+            completeDay();
         }
 
         div.innerHTML = "<span>"+task+"</span>";
         div.appendChild(btn);
-
         container.appendChild(div);
     });
 }
 
 /* COMPLETE DAY */
-function completeTask(){
+function completeDay(){
     if(!selectedDate) return;
 
     data[selectedDate] = { done: true };
@@ -197,9 +207,9 @@ function completeTask(){
 
     document.getElementById("streak").innerText = streak;
 
-    document.getElementById("sound").play();
+    document.getElementById("winSound").play();
 
-    alert("🔥 WOW BABE! DAY COMPLETED 🔥");
+    alert("🔥 WOW BABE! YOU DID IT 🔥");
 
     location.reload();
 }
