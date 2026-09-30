@@ -1,190 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>🔥 UFC Habit Tracker</title>
+<meta charset="UTF-8">
+<title>Iron Discipline Tracker</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+    text-align: center;
+    background: black;
+    overflow-x: hidden;
+}
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI';
-      color: white;
-      text-align: center;
-      background: url("https://images.unsplash.com/photo-1605296867304-46d5465a13f1") no-repeat center/cover;
-    }
+/* 🔥 BACKGROUND IMAGE */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=2070') center/cover;
+    filter: brightness(0.25);
+    z-index: -1;
+}
 
-    .overlay {
-      background: rgba(0,0,0,0.85);
-      min-height: 100vh;
-      padding: 20px;
-    }
+/* TITLE */
+.logo {
+    font-size: 36px;
+    font-weight: bold;
+    color: red;
+    margin-top: 20px;
+    animation: glow 2s infinite alternate;
+}
 
-    h1 {
-      color: red;
-      letter-spacing: 2px;
-      animation: glow 2s infinite alternate;
-    }
+@keyframes glow {
+    from { text-shadow: 0 0 10px red; }
+    to { text-shadow: 0 0 25px red; }
+}
 
-    @keyframes glow {
-      from { text-shadow: 0 0 10px red; }
-      to { text-shadow: 0 0 25px red; }
-    }
+/* CALENDAR */
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    max-width: 800px;
+    margin: 20px auto;
+}
 
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      max-width: 600px;
-      margin: auto;
-    }
+.day {
+    padding: 15px;
+    background: rgba(255,0,0,0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-    .day {
-      padding: 15px;
-      background: rgba(255,0,0,0.2);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+.day:hover {
+    background: red;
+}
 
-    .day:hover {
-      transform: scale(1.1);
-      background: red;
-    }
+.completed {
+    background: green !important;
+}
 
-    .active {
-      background: red;
-    }
+/* TASK BOX */
+.task-box {
+    background: rgba(0,0,0,0.8);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    border-radius: 15px;
+}
 
-    .card {
-      margin-top: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 20px;
-      border-radius: 15px;
-    }
+.task {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
 
-    input {
-      padding: 10px;
-      width: 60%;
-      border-radius: 5px;
-      border: none;
-    }
+button {
+    background: red;
+    border: none;
+    padding: 8px 12px;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
 
-    button {
-      padding: 10px;
-      background: red;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: darkred;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    @media(max-width:600px){
-      .calendar {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-  </style>
+/* STREAK */
+.streak {
+    font-size: 22px;
+    margin-top: 10px;
+    color: orange;
+}
+</style>
 </head>
 
 <body>
-<div class="overlay">
 
-<div class="top-bar">
-  <h1>🔥 HABIT TRACKER</h1>
-  <button onclick="logout()">Logout</button>
-</div>
+<div class="logo">🔥 IRON DISCIPLINE 🔥</div>
 
 <h2 id="monthYear"></h2>
 
 <div class="calendar" id="calendar"></div>
 
-<div class="card">
-  <h3 id="selectedDate">Select a day</h3>
+<div class="task-box">
+    <h3 id="dayTitle">Select a Day</h3>
 
-  <input id="taskInput" placeholder="Enter habit">
-  <button onclick="addTask()">Add</button>
+    <div id="tasks"></div>
 
-  <h3 id="streak">Streak: 0 🔥</h3>
+    <div class="streak">🔥 Streak: <span id="streak">0</span></div>
 </div>
 
-</div>
+<!-- 🔊 SOUND -->
+<audio id="sound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
 
 <script>
-  const calendar = document.getElementById("calendar");
-  const monthYear = document.getElementById("monthYear");
+const tasksList = [
+    "NO JUNK FOOD",
+    "NO MASTURBATION",
+    "DO EXERCISE",
+    "AVOID ALCOHOL"
+];
 
-  let date = new Date();
-  let currentMonth = date.getMonth();
-  let currentYear = date.getFullYear();
-  let selectedDate = null;
-  let streak = 0;
+let selectedDate = null;
+let data = JSON.parse(localStorage.getItem("habitData")) || {};
+let streak = localStorage.getItem("streak") || 0;
 
-  const months = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-  ];
+document.getElementById("streak").innerText = streak;
 
-  monthYear.innerText = months[currentMonth] + " " + currentYear;
+const calendar = document.getElementById("calendar");
+const monthYear = document.getElementById("monthYear");
 
-  function generateCalendar() {
-    calendar.innerHTML = "";
+const now = new Date();
+const year = now.getFullYear();
+const month = now.getMonth();
 
-    let daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+const daysInMonth = new Date(year, month+1, 0).getDate();
 
-    for (let i = 1; i <= daysInMonth; i++) {
-      let day = document.createElement("div");
-      day.classList.add("day");
-      day.innerText = i;
+monthYear.innerText = now.toLocaleString('default', { month: 'long' }) + " " + year;
 
-      day.onclick = () => {
-        document.querySelectorAll(".day").forEach(d => d.classList.remove("active"));
-        day.classList.add("active");
+/* CREATE CALENDAR */
+for(let i=1;i<=daysInMonth;i++){
+    let div = document.createElement("div");
+    div.classList.add("day");
+    div.innerText = i;
 
-        selectedDate = i;
-        document.getElementById("selectedDate").innerText =
-          "Selected: " + i + " " + months[currentMonth];
-      };
+    let key = year+"-"+month+"-"+i;
 
-      calendar.appendChild(day);
-    }
-  }
-
-  generateCalendar();
-
-  function addTask() {
-    if (!selectedDate) {
-      alert("Select a day first!");
-      return;
+    if(data[key] && data[key].done){
+        div.classList.add("completed");
     }
 
-    let task = document.getElementById("taskInput").value;
+    div.onclick = ()=>{
+        selectedDate = key;
+        showTasks(i);
+    }
 
-    localStorage.setItem(currentYear + "-" + currentMonth + "-" + selectedDate, task);
+    calendar.appendChild(div);
+}
+
+/* SHOW TASKS */
+function showTasks(day){
+    document.getElementById("dayTitle").innerText = "Day " + day;
+    let container = document.getElementById("tasks");
+    container.innerHTML = "";
+
+    tasksList.forEach((task,index)=>{
+        let div = document.createElement("div");
+        div.classList.add("task");
+
+        let btn = document.createElement("button");
+        btn.innerText = "Complete";
+
+        btn.onclick = ()=>{
+            completeTask();
+        }
+
+        div.innerHTML = "<span>"+task+"</span>";
+        div.appendChild(btn);
+
+        container.appendChild(div);
+    });
+}
+
+/* COMPLETE DAY */
+function completeTask(){
+    if(!selectedDate) return;
+
+    data[selectedDate] = { done: true };
+    localStorage.setItem("habitData", JSON.stringify(data));
 
     streak++;
-    updateStreak();
+    localStorage.setItem("streak", streak);
 
-    document.getElementById("taskInput").value = "";
-  }
+    document.getElementById("streak").innerText = streak;
 
-  function updateStreak() {
-    document.getElementById("streak").innerText = "Streak: " + streak + " 🔥";
-  }
+    document.getElementById("sound").play();
 
-  function logout() {
-    alert("Logged out (demo)");
-  }
+    alert("🔥 WOW BABE! DAY COMPLETED 🔥");
+
+    location.reload();
+}
 </script>
 
 </body>
